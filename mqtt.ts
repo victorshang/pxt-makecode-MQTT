@@ -69,13 +69,13 @@ namespace mqtt_4_esp01 {
         public oneNetNum2info(dp:string,data:number){
             this._buff=PUBLIC_BUFF.concat(str2array("$dp"))
             this._buff=this._buff.concat([0x03])         //Type3
-            this._buff=this._buff.concat(str2array("{\""+dp+"\":"+data+"}",false))//payload
+            this._buff=this._buff.concat(str2array("{\""+dp+"\":"+data+"}",true))//payload
             this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
         public oneNetStr2info(dp:string,data:string){
             this._buff=PUBLIC_BUFF.concat(str2array("$dp"))
             this._buff=this._buff.concat([0x03])         //Type3
-            this._buff=this._buff.concat(str2array("{\""+dp+"\":\""+data+"\"}",false))//payload
+            this._buff=this._buff.concat(str2array("{\""+dp+"\":\""+data+"\"}",true))//payload
             this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
         public oneNetCMD2info(uuid:string,cmd:string){
