@@ -126,7 +126,7 @@ namespace mqtt_4_esp01 {
     //% weight=80
     //% blockId=onEventSerialData block="Receive $data from $topic"
     //% blockExternalInputs=1
-    //% draggableParameters="reporter"
+    //% draggableParameters="topic"
     //% blockGap=8
     //% group="Connection"
     export function onEventSerialData(topic:TOPIC_CLASS, handler: (data: string) => void) {
@@ -137,8 +137,9 @@ namespace mqtt_4_esp01 {
      * 当收到OneNET信息后的事件设定
      */
     //% weight=80
-    //% blockId=onEventSerialCMD block="Receive OneNet CMD $data from $cmduuid"
+    //% blockId=onEventSerialCMD block="Receive OneNet CMD $data from $cmd_uuid"
     //% blockExternalInputs=1
+    //% draggableParameters="data"
     //% blockGap=8
     //% group="OneNet"
     export function onEventSerialCMD(handler: (cmd_uuid: string, data: string) => void) {
