@@ -17,6 +17,7 @@ enum TOPIC_CLASS {
 
 let MQTTEvent = 200
 let MQTTEventID = 2
+let MQTTEventCMD = 6
 
 
 //% color="#0A27AD"
@@ -100,7 +101,9 @@ namespace mqtt_4_esp01 {
 
     //信息队列
     let payload_array:Array<Array<string>>=[]
-    
+    //命令队列
+    let cmd_array:Array<Array<string>>=[]
+
     let serial_swatch =false;  
     let SerialDataCallback:Array<(v:string)=>void>=[
         function(_d:string){},
@@ -109,9 +112,9 @@ namespace mqtt_4_esp01 {
         function(_d:string){},
         function(_d:string){}
         ] 
-
+    let SerialCMDCallback:(t:string,p:string)=>void=function(t:string,p:string){}
     /**
-     * 当收到信息后的事件设定
+     * 当收到数据信息后的事件设定
      */
     //% weight=80
     //% blockId=onEventSerialData block="Receive $serial_data from $topic"
@@ -123,7 +126,19 @@ namespace mqtt_4_esp01 {
         SerialDataCallback[topic]=handler
     }
 
-    
+    /**
+     * 当收到OneNET信息后的事件设定
+     */
+    //% weight=80
+    //% blockId=onEventSerialCMD block="Receive OneNet CMD $serial_data from $topic"
+    //% blockExternalInputs=1
+    //% draggableParameters="reporter"
+    //% blockGap=8
+    //% group="OneNet"
+    export function onEventSerialCMD(handler: (topic: string, serial_data: string) => void) {
+        SerialCMDCallback=handler
+    }
+
     
     /**
      * 
@@ -451,7 +466,7 @@ namespace mqtt_4_esp01 {
     //% weight=80
     //% blockId=get_Info_by_OneNetType3_str block="OneNET DataPoint%_data_point|Data%_data"
     //% blockGap=8
-    //% group="Information"
+    //% group="OneNet"
     export function get_Info_by_OneNetType3_str(_data_point:string,_data:string) : Information{
         let result = new Information()
         result.oneNetStr2info(_data_point,_data)
@@ -465,7 +480,7 @@ namespace mqtt_4_esp01 {
     //% weight=80
     //% blockId=get_Info_by_OneNetType3_num block="OneNET DataPoint%_data_point|Data%_data"
     //% blockGap=8
-    //% group="Information"
+    //% group="OneNet"
     export function get_Info_by_OneNetType3_num(_data_point:string,_data:number) : Information{
         let result = new Information()
         result.oneNetNum2info(_data_point,_data)
@@ -521,6 +536,7 @@ namespace mqtt_4_esp01 {
      * 返回：无
      */
     function run_topic_callback(_topic_name:string,payload:string) :void{
+        //数据报文
         switch(_topic_name){
             case Topic_Data[TOPIC_CLASS.Topic1]:
             case Topic_Data[TOPIC_CLASS.Topic2]:
@@ -531,33 +547,12 @@ namespace mqtt_4_esp01 {
                 control.raiseEvent(MQTTEvent, MQTTEventID)
                 break;
         }
-    }
-    /**
-     * 
-     * 调用 主题文本名称 对应的回调函数 
-     * 参数： _topic_name 主题文本名称 ;payload 负载数据
-     * 返回：无
-     */
-    function run_topic_callback1(_topic_name:string,payload:string) :void{
-        switch(_topic_name){
-            case Topic_Data[TOPIC_CLASS.Topic1]:
-                SerialDataCallback[TOPIC_CLASS.Topic1](payload);
-                break;
-            case Topic_Data[TOPIC_CLASS.Topic2]:
-                SerialDataCallback[TOPIC_CLASS.Topic2](payload);
-                break;
-            case Topic_Data[TOPIC_CLASS.Topic3]:
-                SerialDataCallback[TOPIC_CLASS.Topic3](payload);
-                break;
-            case Topic_Data[TOPIC_CLASS.Topic4]:
-                SerialDataCallback[TOPIC_CLASS.Topic4](payload);
-                break;
-            case Topic_Data[TOPIC_CLASS.Topic5]:
-                SerialDataCallback[TOPIC_CLASS.Topic5](payload);
-                break;
+        //OneNET CMD报文
+        if(_topic_name.indexOf("$creq")==0){
+            cmd_array.push([_topic_name,payload])
+            control.raiseEvent(MQTTEvent, MQTTEventCMD)
         }
     }
-
      /**
      * 
      * 读取MQTT报文中"剩余长度"大小，如果数值大小超过128，则抛出"too_big"异常
@@ -582,9 +577,19 @@ namespace mqtt_4_esp01 {
     function clean_buff() : void{//清空缓冲区
         while(serial.readString().length>0){} //清空缓冲区
     }
-
     /*
-     * 事件监听 发现总线上存在MQTT事件，则执行相应的代码
+     * 事件监听 发现总线上存在MQTT命令事件，则执行相应的代码
+     */
+    control.onEvent(MQTTEvent, MQTTEventCMD, function () {       
+        if(cmd_array.length>0){
+            let item=payload_array.shift()
+            let topic_name=item[0]
+            let payload=item[1]
+            SerialCMDCallback(topic_name,payload)
+        }
+    })
+    /*
+     * 事件监听 发现总线上存在MQTT数据事件，则执行相应的代码
      */
     control.onEvent(MQTTEvent, MQTTEventID, function() {
         if(payload_array.length>0){
