@@ -612,7 +612,6 @@ namespace mqtt_4_esp01 {
         
     })
 
-    control.inBackground(function() {
         basic.forever(function() {
             if(esp01_init){
                 let fixed_header=serial.readBuffer(1)
@@ -671,6 +670,5 @@ namespace mqtt_4_esp01 {
                 }
                 basic.pause(5)
             }
-        })
     })   
 }
