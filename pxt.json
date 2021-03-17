@@ -3,14 +3,10 @@
     "version": "0.0.2",
     "description": "",
     "dependencies": {
-        "core": "*",
-        "radio": "*",
-        "microphone": "*"
+        "core": "*"
     },
     "files": [
         "README.md",
-        "main.blocks",
-        "main.ts",
         "mqtt.ts"
     ],
     "testFiles": [
