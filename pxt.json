@@ -10,7 +10,8 @@
     "files": [
         "README.md",
         "main.blocks",
-        "main.ts"
+        "main.ts",
+        "mqtt.ts"
     ],
     "testFiles": [
         "test.ts"
@@ -19,5 +20,5 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "tsprj"
 }
