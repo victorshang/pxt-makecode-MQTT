@@ -1,5 +1,5 @@
 {
-    "name": "pxt-makecode-mqtt",
+    "name": "makecode mqtt",
     "version": "0.0.5",
     "description": "",
     "dependencies": {
