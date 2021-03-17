@@ -487,7 +487,6 @@ namespace mqtt_4_esp01 {
         return result
     }
 
-
     /*
      * 发送 发布信息
      * 参数：info 信息；_timeout 超时时间；以 mqtt_public 为依据
