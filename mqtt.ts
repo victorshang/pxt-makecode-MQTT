@@ -479,12 +479,12 @@ namespace mqtt_4_esp01 {
      * 返回：成功返回true，失败返回 false ; 
      */
     //% weight=75
-    //% blockId=send_MQTT_public block="Public|info:%info|timeout:%_timeout ms"
+    //% blockId=send_MQTT_public block="Public|info:%info"
     //% _timeout.defl="2000"
     //% blockGap=8
     //% group="Community"
-    export function send_MQTT_public(info:Information,_timeout:number) : boolean{
-        return send_and_check_resp(_timeout,mqtt_public,info._buff)
+    export function send_MQTT_public(info:Information) : void{
+        send_and_check_resp(0,mqtt_public,info._buff)
     }
     
     /**
