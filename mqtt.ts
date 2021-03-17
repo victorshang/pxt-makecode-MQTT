@@ -113,6 +113,8 @@ namespace mqtt_4_esp01 {
         function(_d:string){}
         ] 
     let SerialCMDCallback:(t:string,p:string)=>void=function(t:string,p:string){}
+
+    
     /**
      * 当收到数据信息后的事件设定
      */
@@ -581,7 +583,7 @@ namespace mqtt_4_esp01 {
      */
     control.onEvent(MQTTEvent, MQTTEventCMD, function () {       
         if(cmd_array.length>0){
-            let item=payload_array.shift()
+            let item=cmd_array.shift()
             let topic_name=item[0]
             let payload=item[1]
             SerialCMDCallback(topic_name,payload)
