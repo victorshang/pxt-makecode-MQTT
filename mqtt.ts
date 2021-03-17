@@ -112,19 +112,19 @@ namespace mqtt_4_esp01 {
         function(_d:string){},
         function(_d:string){}
         ] 
-    let SerialCMDCallback:(t:string,p:string)=>void=function(t:string,p:string){}
+    let SerialCMDCallback:(u:string,p:string)=>void=function(u:string,p:string){}
 
     
     /**
      * 当收到数据信息后的事件设定
      */
     //% weight=80
-    //% blockId=onEventSerialData block="Receive $serial_data from $topic"
+    //% blockId=onEventSerialData block="Receive $data from $topic"
     //% blockExternalInputs=1
     //% draggableParameters="reporter"
     //% blockGap=8
     //% group="Connection"
-    export function onEventSerialData(topic:TOPIC_CLASS, handler: (serial_data: string) => void) {
+    export function onEventSerialData(topic:TOPIC_CLASS, handler: (data: string) => void) {
         SerialDataCallback[topic]=handler
     }
 
@@ -132,12 +132,12 @@ namespace mqtt_4_esp01 {
      * 当收到OneNET信息后的事件设定
      */
     //% weight=80
-    //% blockId=onEventSerialCMD block="Receive OneNet CMD $serial_data from $topic"
+    //% blockId=onEventSerialCMD block="Receive OneNet CMD $data from $cmduuid"
     //% blockExternalInputs=1
     //% draggableParameters="reporter"
     //% blockGap=8
     //% group="OneNet"
-    export function onEventSerialCMD(handler: (topic: string, serial_data: string) => void) {
+    export function onEventSerialCMD(handler: (cmd_uuid: string, data: string) => void) {
         SerialCMDCallback=handler
     }
 
@@ -550,7 +550,7 @@ namespace mqtt_4_esp01 {
         }
         //OneNET CMD报文
         if(_topic_name.indexOf("$creq")==0){
-            cmd_array.push([_topic_name,payload])
+            cmd_array.push([_topic_name.substr(6,36),payload])
             control.raiseEvent(MQTTEvent, MQTTEventCMD)
         }
     }
@@ -584,9 +584,9 @@ namespace mqtt_4_esp01 {
     control.onEvent(MQTTEvent, MQTTEventCMD, function () {       
         if(cmd_array.length>0){
             let item=cmd_array.shift()
-            let topic_name=item[0]
+            let cmd_uuid=item[0]
             let payload=item[1]
-            SerialCMDCallback(topic_name,payload)
+            SerialCMDCallback(cmd_uuid,payload)
         }
     })
     /*
