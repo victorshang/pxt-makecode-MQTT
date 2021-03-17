@@ -69,13 +69,18 @@ namespace mqtt_4_esp01 {
         public oneNetNum2info(dp:string,data:number){
             this._buff=PUBLIC_BUFF.concat(str2array("$dp"))
             this._buff=this._buff.concat([0x03])         //Type3
-            this._buff=this._buff.concat(str2array("{\""+dp+"\":"+data+"}"))//payload
+            this._buff=this._buff.concat(str2array("{\""+dp+"\":"+data+"}",false))//payload
             this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
         public oneNetStr2info(dp:string,data:string){
             this._buff=PUBLIC_BUFF.concat(str2array("$dp"))
             this._buff=this._buff.concat([0x03])         //Type3
-            this._buff=this._buff.concat(str2array("{\""+dp+"\":\""+data+"\"}"))//payload
+            this._buff=this._buff.concat(str2array("{\""+dp+"\":\""+data+"\"}",false))//payload
+            this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
+        }
+        public oneNetCMD2info(uuid:string,cmd:string){
+            this._buff=PUBLIC_BUFF.concat(str2array("$crsp/"+uuid))
+            this._buff=this._buff.concat(str2array(cmd,false))//payload
             this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
     }
@@ -134,7 +139,6 @@ namespace mqtt_4_esp01 {
     //% weight=80
     //% blockId=onEventSerialCMD block="Receive OneNet CMD $data from $cmduuid"
     //% blockExternalInputs=1
-    //% draggableParameters="reporter"
     //% blockGap=8
     //% group="OneNet"
     export function onEventSerialCMD(handler: (cmd_uuid: string, data: string) => void) {
@@ -488,7 +492,20 @@ namespace mqtt_4_esp01 {
         result.oneNetNum2info(_data_point,_data)
         return result
     }
-
+    /*
+     * 依据字符串生成待发送命令格式数据
+     * 参数：uuid  命令uuid ;_cmd 回复命令
+     * 返回：数据
+     */
+    //% weight=80
+    //% blockId=get_Info_by_OneNet_CMD block="OneNET UUID%uuid|Cmd%_cmd"
+    //% blockGap=8
+    //% group="OneNet"
+    export function get_Info_by_OneNet_CMD(_uuid:string,_cmd:string) : Information{
+        let result = new Information()
+        result.oneNetCMD2info(_uuid,_cmd)
+        return result
+    }
     /*
      * 发送 发布信息
      * 参数：info 信息；_timeout 超时时间；以 mqtt_public 为依据
