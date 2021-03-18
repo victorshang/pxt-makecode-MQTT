@@ -477,6 +477,7 @@ namespace mqtt_4_esp01 {
      */
     //% weight=80
     //% blockId=get_Info_by_OneNetType3_str block="OneNET |DPName%_data_point|string%_data"
+    //% blockExternalInputs=1 advanced=true
     //% blockGap=8
     //% group="OneNet"
     export function get_Info_by_OneNetType3_str(_data_point:string,_data:string) : Information{
@@ -491,6 +492,7 @@ namespace mqtt_4_esp01 {
      */
     //% weight=80
     //% blockId=get_Info_by_OneNetType3_num block="OneNET |DPName%_data_point|number%_data"
+    //% blockExternalInputs=1 advanced=true
     //% blockGap=8
     //% group="OneNet"
     export function get_Info_by_OneNetType3_num(_data_point:string,_data:number) : Information{
@@ -500,12 +502,13 @@ namespace mqtt_4_esp01 {
     }
 
     /*
-     * 依据字符串生成待发送命令格式数据
+     * 依据字符串生成待应答命令格式数据
      * 参数：uuid  命令uuid ;_cmd 回复命令
      * 返回：数据
      */
     //% weight=80
     //% blockId=get_Info_by_OneNet_CMD block="OneNET |UUID%_uuid|Cmd%_cmd"
+    //% blockExternalInputs=1 advanced=true
     //% blockGap=8
     //% group="OneNet"
     export function get_Info_by_OneNet_CMD(_uuid:string,_cmd:string) : Information{
@@ -520,6 +523,7 @@ namespace mqtt_4_esp01 {
      */
     //% weight=75
     //% blockId=send_MQTT_public block="Public|info:%_info"
+    //% blockExternalInputs=1 advanced=true
     //% _timeout.defl="2000"
     //% blockGap=8
     //% group="Community"
