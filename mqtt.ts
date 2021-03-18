@@ -126,6 +126,7 @@ namespace mqtt_4_esp01 {
      */
     //% weight=80
     //% blockId=onEventSerialData block="Receive $data from $topic"
+    //% block.loc.zh-cn="当收到来自$topic的数据$data时"
     //% blockExternalInputs=1
     //% draggableParameters="topic"
     //% blockGap=8

@@ -7,8 +7,7 @@
     },
     "files": [
         "README.md",
-        "mqtt.ts",
-        "_locales/zh-cn/mqtt-strings.json"
+        "mqtt.ts"
     ],
     "testFiles": [
         "test.ts"
