@@ -540,7 +540,7 @@ namespace mqtt_4_esp01 {
     //% weight=70
     //% blockId=send_MQTT_ping block="Ping $_timeout (s)"
     //% _timeout.defl="2"
-    //% group="Community"
+    //% group="Communication"
     export function send_MQTT_ping(_timeout :number) : boolean{
         _timeout=Math.round(_timeout*1000)
         return send_and_check_resp(_timeout,mqtt_ping,PING_BUFF)
