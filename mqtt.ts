@@ -428,7 +428,7 @@ namespace mqtt_4_esp01 {
      * 返回：成功返回true，失败返回 false 
      */
     //% weight=80
-    //% blockId=send_MQTT_unsubTopic block="UnSubTopic|%topic_id|timeout%_timeout (s)"
+    //% blockId=send_MQTT_unsubTopic block="UnSubTopic %topic_id timeout%_timeout (s)"
     //% _timeout.defl="2"
     //% topic_id.defl=TOPIC_CLASS.Topic1
     //% blockGap=8
@@ -462,7 +462,7 @@ namespace mqtt_4_esp01 {
      * 返回：生成的Info
      */
     //% weight=80
-    //% blockId=get_Info_by_array block="Send |Array %_payload |to%_topic_name"
+    //% blockId=get_Info_by_array block="Send Array %_payload to%_topic_name"
     //% blockGap=8
     //% group="Information"
     export function get_Info_by_array(_topic_name:string,_payload:Array<number>) : Information{
@@ -476,7 +476,7 @@ namespace mqtt_4_esp01 {
      * 返回：数据
      */
     //% weight=80
-    //% blockId=get_Info_by_OneNetType3_str block="OneNET |DPName%_data_point|string%_data"
+    //% blockId=get_Info_by_OneNetType3_str block="OneNET DPName%_data_point string%_data"
     //% blockExternalInputs=1 advanced=true
     //% blockGap=8
     //% group="OneNet"
@@ -491,7 +491,7 @@ namespace mqtt_4_esp01 {
      * 返回：数据
      */
     //% weight=80
-    //% blockId=get_Info_by_OneNetType3_num block="OneNET |DPName%_data_point|number%_data"
+    //% blockId=get_Info_by_OneNetType3_num block="OneNET DPName%_data_point number%_data"
     //% blockExternalInputs=1 advanced=true
     //% blockGap=8
     //% group="OneNet"
@@ -507,7 +507,7 @@ namespace mqtt_4_esp01 {
      * 返回：数据
      */
     //% weight=80
-    //% blockId=get_Info_by_OneNet_CMD block="OneNET |UUID%_uuid|Cmd%_cmd"
+    //% blockId=get_Info_by_OneNet_CMD block="OneNET UUID%_uuid Cmd%_cmd"
     //% blockExternalInputs=1 advanced=true
     //% blockGap=8
     //% group="OneNet"
