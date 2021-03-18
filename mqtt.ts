@@ -264,7 +264,7 @@ namespace mqtt_4_esp01 {
     //% blockId=connectack_code block="ConnectAck code" 
     //% blockExternalInputs=1
     //% blockGap=8
-    //% group="Init"
+    //% group="Community"
     export function connectack_code ():number{
         return mqtt_connect.payload
     }
@@ -523,8 +523,7 @@ namespace mqtt_4_esp01 {
      */
     //% weight=75
     //% blockId=send_MQTT_public block="Public|info:%_info"
-    //% blockExternalInputs=1 advanced=true
-    //% _timeout.defl="2000"
+    //% blockExternalInputs=1
     //% blockGap=8
     //% group="Community"
     export function send_MQTT_public(_info:Information) : void{
