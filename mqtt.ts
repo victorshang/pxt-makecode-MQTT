@@ -57,7 +57,7 @@ namespace mqtt_4_esp01 {
             this.payload=-1
         }
     }
-
+    //% color="#00aaff"
     class Information {
         public _buff:Array<number>=[]
         public constructor(){}
@@ -293,7 +293,7 @@ namespace mqtt_4_esp01 {
      * 
      */
     //% weight=85
-    //% blockId=set_MQTT_SubTopic block="Set |%topic as |%topic_id"
+    //% blockId=set_MQTT_SubTopic block="Set %topic as %topic_id"
     //% blockExternalInputs=1
     //% _topic_name.defl=""
     //% _topic_id.defl=TOPIC_CLASS.Topic1
