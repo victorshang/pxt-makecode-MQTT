@@ -8,7 +8,7 @@
     "files": [
         "README.md",
         "mqtt.ts",
-        "_locales/zh-cn/mqtt_4_esp01-strings.json"
+        "_locales/zh/mqtt_4_esp01-strings.json"
     ],
     "testFiles": [
         "test.ts"
