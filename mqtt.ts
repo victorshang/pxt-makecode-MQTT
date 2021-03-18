@@ -265,7 +265,7 @@ namespace mqtt_4_esp01 {
     //% blockId=connectack_code block="ConnectAck code" 
     //% blockExternalInputs=1
     //% blockGap=8
-    //% group="Community"
+    //% group="Communication"
     export function connectack_code ():number{
         return mqtt_connect.payload
     }
@@ -380,7 +380,7 @@ namespace mqtt_4_esp01 {
     //% blockId=send_MQTT_connect block="Connect|timeout %_timeout (s)"
     //% _timeout.defl="2"
     //% blockGap=8
-    //% group="Community"
+    //% group="Communication"
     export function send_MQTT_connect(_timeout:number):boolean{
         _timeout=Math.round(_timeout*1000)
         let _buff=CONNECT_BUFF.concat(str2array(mqtt_client))
@@ -413,7 +413,7 @@ namespace mqtt_4_esp01 {
     //% _timeout.defl="2"
     //% _topic_id.defl=TOPIC_CLASS.Topic1
     //% blockGap=8
-    //% group="Community"
+    //% group="Communication"
     export function send_MQTT_subTopic(_topic_id:TOPIC_CLASS,_timeout:number):boolean{
         _timeout=Math.round(_timeout*1000)
         let _buff=SUBSCRIBE_BUFF.concat(str2array(Topic_Data[_topic_id]))
@@ -433,7 +433,7 @@ namespace mqtt_4_esp01 {
     //% _timeout.defl="2"
     //% topic_id.defl=TOPIC_CLASS.Topic1
     //% blockGap=8
-    //% group="Community"
+    //% group="Communication"
     export function send_MQTT_unsubTopic(_topic_id:TOPIC_CLASS,_timeout:number):boolean{
         _timeout=Math.round(_timeout*1000)
         let _buff=UNSUBSCRIBE_BUFF.concat(str2array(Topic_Data[_topic_id]))
@@ -526,7 +526,7 @@ namespace mqtt_4_esp01 {
     //% blockId=send_MQTT_public block="Public|info:%_info"
     //% blockExternalInputs=1
     //% blockGap=8
-    //% group="Community"
+    //% group="Communication"
     export function send_MQTT_public(_info:Information) : void{
         send_and_check_resp(-1,mqtt_public,_info._buff) //不等待超时，Qos0 不返回结果
     }
@@ -554,7 +554,7 @@ namespace mqtt_4_esp01 {
      */
     //% weight=50
     //% blockId=send_MQTT_disconnect block="Disconnect"
-    //% group="Community"
+    //% group="Communication"
     export function send_MQTT_disconnect(): void{
         serial.writeBuffer(Buffer.fromArray(DISCONNECT_BUFF))
     }
