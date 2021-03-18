@@ -1,7 +1,13 @@
 /**
- *  MQTT for esp-01
- *  
+ * MQTT for esp-01
+ * 
+ * @copyright	MIT Lesser General Public License
+ *
+ * @author [email](vshang2006@163.com)
+ * @version  V1.X
+ * @date  2021-03-22
  */
+
 enum TOPIC_CLASS {
     //% block="TOPIC1"
     Topic1=0,
@@ -20,20 +26,19 @@ let MQTTEventID = 2
 let MQTTEventCMD = 6
 
 
-//% color="#0A27AD"
-//% block="MQTT"
+//% weight=10 icon="\uf1eb" block="MQTT" color="#1533aa"
 namespace mqtt_4_esp01 {
-    const TIMEOUT = 1000         //两次读取缓冲间的超时时间
-    const REMAINING_LEN_MAX =127 //剩余长度最大容量
+    const TIMEOUT = 1000;         //两次读取缓冲间的超时时间
+    const REMAINING_LEN_MAX = 127 //剩余长度最大容量
 
     //固定头中的首个命令字
-    const CONNACK = 0x20;
-    const SUBACK = 0x90;
-    const PUBACK = 0x40;
-    const UNSUBACK = 0xB0;
-    const PINGRESP = 0xD0;
-    const PUBLIC1 = 0x30;
-    const PUBLIC2 = 0x31;
+    const CONNACK   = 0x20;
+    const SUBACK    = 0x90;
+    const PUBACK    = 0x40;
+    const UNSUBACK  = 0xB0;
+    const PINGRESP  = 0xD0;
+    const PUBLIC1   = 0x30;
+    const PUBLIC2   = 0x31;
     
     //待发送的固定数据头
     const CONNECT_BUFF = [0x10,0x00,0x00,0x04,0x4D,0x51,0x54,0x54,0x04,0xc2,0x00,0x0f];
@@ -59,57 +64,52 @@ namespace mqtt_4_esp01 {
         public str2info(t:string,v:string){
             this._buff=PUBLIC_BUFF.concat(str2array(t))
             this._buff=this._buff.concat(str2array(v,false))
-            this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
+            this._buff[1]=this._buff.length-2       //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
         public arr2info(t:string,v:Array<number>){
             this._buff=PUBLIC_BUFF.concat(str2array(t))
             this._buff=this._buff.concat(v)
-            this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
+            this._buff[1]=this._buff.length-2       //设置剩余长度  限定：登录信息总长度不超过128个字符
         }      
         public oneNetNum2info(dp:string,data:number){
             this._buff=PUBLIC_BUFF.concat(str2array("$dp"))
             this._buff=this._buff.concat([0x03])         //Type3
             this._buff=this._buff.concat(str2array("{\""+dp+"\":"+data+"}",true))//payload
-            this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
+            this._buff[1]=this._buff.length-2       //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
         public oneNetStr2info(dp:string,data:string){
             this._buff=PUBLIC_BUFF.concat(str2array("$dp"))
             this._buff=this._buff.concat([0x03])         //Type3
             this._buff=this._buff.concat(str2array("{\""+dp+"\":\""+data+"\"}",true))//payload
-            this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
+            this._buff[1]=this._buff.length-2       //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
         public oneNetCMD2info(uuid:string,cmd:string){
             this._buff=PUBLIC_BUFF.concat(str2array("$crsp/"+uuid))
             this._buff=this._buff.concat(str2array(cmd,false))//payload
-            this._buff[1]=this._buff.length-2 //设置剩余长度  限定：登录信息总长度不超过128个字符
+            this._buff[1]=this._buff.length-2       //设置剩余长度  限定：登录信息总长度不超过128个字符
         }
     }
-
     //ESP是否被初始化
     let esp01_init=false
-
+    //MQTT服务器配置信息
     let mqtt_server = ""
-    let mqtt_port = 1883
+    let mqtt_port = 0
     let mqtt_client = "" 
     let mqtt_username = ""
     let mqtt_password = ""
-
-    //标志
+    //定义有关标志变量
     let mqtt_connect=new Flag(false)  //是否收到登录
     let mqtt_sub=new Flag(false)    //是否收到注册主题
     let mqtt_unsub=new Flag(false)    //是否收到取消注册主题
     let mqtt_ping=new Flag(false)   //是否收到Ping成功
     let mqtt_public=new Flag(false)   //是否收到发布成功
-
-    //主题文本文本
+    //主题的文本字符串
     let Topic_Data=["*","*","*","*","*","*"]
-
     //信息队列
     let payload_array:Array<Array<string>>=[]
     //命令队列
     let cmd_array:Array<Array<string>>=[]
-
-    let serial_swatch =false;  
+    //信息到达时的回调函数
     let SerialDataCallback:Array<(v:string)=>void>=[
         function(_d:string){},
         function(_d:string){},
@@ -117,6 +117,7 @@ namespace mqtt_4_esp01 {
         function(_d:string){},
         function(_d:string){}
         ] 
+    //命令到达时的回调函数
     let SerialCMDCallback:(u:string,p:string)=>void=function(u:string,p:string){}
 
     
@@ -128,24 +129,23 @@ namespace mqtt_4_esp01 {
     //% blockExternalInputs=1
     //% draggableParameters="topic"
     //% blockGap=8
-    //% group="Connection"
+    //% group="Event"
     export function onEventSerialData(topic:TOPIC_CLASS, handler: (data: string) => void) {
         SerialDataCallback[topic]=handler
     }
 
     /**
-     * 当收到OneNET信息后的事件设定
+     * 当收到OneNET命令后的事件设定
      */
     //% weight=80
     //% blockId=onEventSerialCMD block="Receive OneNet CMD $data from $cmd_uuid"
-    //% blockExternalInputs=1
+    //% blockExternalInputs=1 advanced=true
     //% draggableParameters="data"
     //% blockGap=8
     //% group="OneNet"
     export function onEventSerialCMD(handler: (cmd_uuid: string, data: string) => void) {
         SerialCMDCallback=handler
     }
-
     
     /**
      * 
@@ -175,7 +175,7 @@ namespace mqtt_4_esp01 {
         send0x00()
     }
     /**
-     * 等待串口返回的字符，只在init的时候使用
+     * 等待串口返回的字符，只可以在初始化串口的时候使用
      */
     function wait4str(str:string,timeout:number):boolean{
         let _this_monent=control.millis()
@@ -191,7 +191,7 @@ namespace mqtt_4_esp01 {
         }
         return result
     }
-        
+
     /**
      * 设置ESP01模块
      * 参数：
@@ -227,11 +227,11 @@ namespace mqtt_4_esp01 {
         while(!wait4str("OK",500)){}  //死等
         serial.writeString("AT+RST" + serial.NEW_LINE);
         while(!wait4str("ready",10)){}  //死等
-        basic.pause(5000) //硬等待5秒，待建立连接
+        basic.pause(5000) //硬等待5秒，待建立连接，如果不足，外面再等待若干秒
         //连接完成
-        //clean_buff();
         esp01_init=true;
     }
+
     /**
      * 
      * 返回 初始化ESP01是否完成
@@ -252,6 +252,7 @@ namespace mqtt_4_esp01 {
      * 返回 登录反馈信息
      * 参数：五
      * 返回：反馈信息代码
+     * -1 0xff 连接超时
      * 0 0x00 连接已接受 连接已被服务端接受
      * 1 0x01 连接已拒绝，不支持的协议版本 服务端不支持客户端请求的 MQTT 协议级别
      * 2 0x02 连接已拒绝，不合格的客户端标识符 客户端标识符是正确的 UTF-8 编码，但服务端不允许使用
@@ -260,13 +261,14 @@ namespace mqtt_4_esp01 {
      * 5 0x05 连接已拒绝，未授权 客户端未被授权连接到此服务器
      */
     //% weight=95
-    //% blockId=connectack_code block="ConnectAck code"
+    //% blockId=connectack_code block="ConnectAck code" 
     //% blockExternalInputs=1
     //% blockGap=8
     //% group="Init"
     export function connectack_code ():number{
         return mqtt_connect.payload
     }
+
     /**
      * 
      * 发送缓冲区数据，并等待返回，
@@ -291,7 +293,7 @@ namespace mqtt_4_esp01 {
      * 
      */
     //% weight=85
-    //% blockId=set_MQTT_SubTopic block="Set topic_id:%topic_id topic:%topic"
+    //% blockId=set_MQTT_SubTopic block="Set |%topic as |%topic_id"
     //% blockExternalInputs=1
     //% _topic_name.defl=""
     //% _topic_id.defl=TOPIC_CLASS.Topic1
@@ -354,11 +356,11 @@ namespace mqtt_4_esp01 {
      * 返回：无
      */
     //% weight=95
-    //% blockId=init_MQTT_info block="Init MQTT info|client %client|username %username|password %password"
+    //% blockId=init_MQTT_info block="Init MQTT|client %client|username %username|password %password"
     //% blockExternalInputs=1
-    //% client.defl="client001"
-    //% username.defl="siot"
-    //% password.defl="siot"
+    //% client.defl=""
+    //% username.defl=""
+    //% password.defl=""
     //% blockGap=8
     //% group="Init"
     export function init_MQTT_info(_client:string,_username:string,_password:string):void{
@@ -374,11 +376,12 @@ namespace mqtt_4_esp01 {
      * 返回：成功返回true，失败返回 false 
      */
     //% weight=90
-    //% blockId=send_MQTT_connect block="Connect|timeout %_timeout ms"
-    //% _timeout.defl="2000"
+    //% blockId=send_MQTT_connect block="Connect|timeout %_timeout (s)"
+    //% _timeout.defl="2"
     //% blockGap=8
     //% group="Community"
     export function send_MQTT_connect(_timeout:number):boolean{
+        _timeout=Math.round(_timeout*1000)
         let _buff=CONNECT_BUFF.concat(str2array(mqtt_client))
         _buff=_buff.concat(str2array(mqtt_username))
         _buff=_buff.concat(str2array(mqtt_password))
@@ -405,12 +408,13 @@ namespace mqtt_4_esp01 {
      * 返回：成功返回true，失败返回 false 
      */
     //% weight=83
-    //% blockId=send_MQTT_subTopic block="SubTopic|Topic %topic_id|timeout %_timeout ms"
-    //% _timeout.defl="2000"
+    //% blockId=send_MQTT_subTopic block="SubTopic|%topic_id|timeout%_timeout (s)"
+    //% _timeout.defl="2"
     //% _topic_id.defl=TOPIC_CLASS.Topic1
     //% blockGap=8
     //% group="Community"
-    export function send_MQTT_subTopic(_topic_id:TOPIC_CLASS,_timeout:number){
+    export function send_MQTT_subTopic(_topic_id:TOPIC_CLASS,_timeout:number):boolean{
+        _timeout=Math.round(_timeout*1000)
         let _buff=SUBSCRIBE_BUFF.concat(str2array(Topic_Data[_topic_id]))
         _buff=_buff.concat([0x00])
         _buff[1]=_buff.length-2
@@ -424,12 +428,13 @@ namespace mqtt_4_esp01 {
      * 返回：成功返回true，失败返回 false 
      */
     //% weight=80
-    //% blockId=send_MQTT_unsubTopic block="UnSubTopic|Topic:%topic_id|timeout:%_timeout ms"
-    //% _timeout.defl="2000"
-    //% topic_id.defl=TOPIC_CLASS.Topic3
+    //% blockId=send_MQTT_unsubTopic block="UnSubTopic|%topic_id|timeout%_timeout (s)"
+    //% _timeout.defl="2"
+    //% topic_id.defl=TOPIC_CLASS.Topic1
     //% blockGap=8
     //% group="Community"
-    export function send_MQTT_unsubTopic(_topic_id:TOPIC_CLASS,_timeout:number){
+    export function send_MQTT_unsubTopic(_topic_id:TOPIC_CLASS,_timeout:number):boolean{
+        _timeout=Math.round(_timeout*1000)
         let _buff=UNSUBSCRIBE_BUFF.concat(str2array(Topic_Data[_topic_id]))
         _buff[1]=_buff.length-2
         return send_and_check_resp(_timeout,mqtt_unsub,_buff)
@@ -439,11 +444,11 @@ namespace mqtt_4_esp01 {
 
     /*
      * 依据字符串生成待发送数据
-     * 参数：_topic_id 订阅编号 ; _payload 字符串数据
-     * 返回：成功返回true，失败返回 false 
+     * 参数：_topic_name 主题名称; _payload 字符串数据
+     * 返回：生成的Info
      */
     //% weight=80
-    //% blockId=get_Info_by_str block="TopicName%_topic_name|Payload%_payload"
+    //% blockId=get_Info_by_str block="Send |String%_payload |to%_topic_name"
     //% blockGap=8
     //% group="Information"
     export function get_Info_by_str(_topic_name:string,_payload:string) : Information{
@@ -453,11 +458,11 @@ namespace mqtt_4_esp01 {
     }
     /*
      * 依据数组生成待发送数据
-     * 参数：_topic_id 订阅编号 ; _payload 数组数据
-     * 返回：成功返回true，失败返回 false 
+     * 参数：_topic_name 主题名称; _payload 数组数据
+     * 返回：生成的Info
      */
     //% weight=80
-    //% blockId=get_Info_by_array block="TopicName%_topic_name|Payload%_payload"
+    //% blockId=get_Info_by_array block="Send |Array %_payload |to%_topic_name"
     //% blockGap=8
     //% group="Information"
     export function get_Info_by_array(_topic_name:string,_payload:Array<number>) : Information{
@@ -466,12 +471,12 @@ namespace mqtt_4_esp01 {
         return result
     }
     /*
-     * 依据数组生成待发送数据
+     * 依据字符串生成OneNet Type3类型的数据  {"数据点":"字符串"}
      * 参数：_data_point 数据节点;_data 字符串数据 
      * 返回：数据
      */
     //% weight=80
-    //% blockId=get_Info_by_OneNetType3_str block="OneNET DataPoint%_data_point|Data%_data"
+    //% blockId=get_Info_by_OneNetType3_str block="OneNET |DPName%_data_point|string%_data"
     //% blockGap=8
     //% group="OneNet"
     export function get_Info_by_OneNetType3_str(_data_point:string,_data:string) : Information{
@@ -480,12 +485,12 @@ namespace mqtt_4_esp01 {
         return result
     }
     /*
-     * 依据数组生成待发送数据
+     * 依据数字生成OneNet Type3类型的数据  {"数据点":数字}
      * 参数：_data_point 数据节点;_data 数值数据 
      * 返回：数据
      */
     //% weight=80
-    //% blockId=get_Info_by_OneNetType3_num block="OneNET DataPoint%_data_point|Data%_data"
+    //% blockId=get_Info_by_OneNetType3_num block="OneNET |DPName%_data_point|number%_data"
     //% blockGap=8
     //% group="OneNet"
     export function get_Info_by_OneNetType3_num(_data_point:string,_data:number) : Information{
@@ -493,13 +498,14 @@ namespace mqtt_4_esp01 {
         result.oneNetNum2info(_data_point,_data)
         return result
     }
+
     /*
      * 依据字符串生成待发送命令格式数据
      * 参数：uuid  命令uuid ;_cmd 回复命令
      * 返回：数据
      */
     //% weight=80
-    //% blockId=get_Info_by_OneNet_CMD block="OneNET UUID%uuid|Cmd%_cmd"
+    //% blockId=get_Info_by_OneNet_CMD block="OneNET |UUID%_uuid|Cmd%_cmd"
     //% blockGap=8
     //% group="OneNet"
     export function get_Info_by_OneNet_CMD(_uuid:string,_cmd:string) : Information{
@@ -513,12 +519,12 @@ namespace mqtt_4_esp01 {
      * 返回：成功返回true，失败返回 false ; 
      */
     //% weight=75
-    //% blockId=send_MQTT_public block="Public|info:%info"
+    //% blockId=send_MQTT_public block="Public|info:%_info"
     //% _timeout.defl="2000"
     //% blockGap=8
     //% group="Community"
-    export function send_MQTT_public(info:Information) : void{
-        send_and_check_resp(0,mqtt_public,info._buff)
+    export function send_MQTT_public(_info:Information) : void{
+        send_and_check_resp(-1,mqtt_public,_info._buff) //不等待超时，Qos0 不返回结果
     }
     
     /**
@@ -528,10 +534,11 @@ namespace mqtt_4_esp01 {
      * 返回：成功返回true，失败返回 false
      */
     //% weight=70
-    //% blockId=send_MQTT_ping block="Ping $_timeout ms"
-    //% _timeout.defl="2000"
+    //% blockId=send_MQTT_ping block="Ping $_timeout (s)"
+    //% _timeout.defl="2"
     //% group="Community"
     export function send_MQTT_ping(_timeout :number) : boolean{
+        _timeout=Math.round(_timeout*1000)
         return send_and_check_resp(_timeout,mqtt_ping,PING_BUFF)
     }
     
@@ -572,6 +579,7 @@ namespace mqtt_4_esp01 {
             control.raiseEvent(MQTTEvent, MQTTEventCMD)
         }
     }
+
      /**
      * 
      * 读取MQTT报文中"剩余长度"大小，如果数值大小超过128，则抛出"too_big"异常
@@ -595,7 +603,9 @@ namespace mqtt_4_esp01 {
      */
     function clean_buff() : void{//清空缓冲区
         while(serial.readString().length>0){} //清空缓冲区
+        //serial.readBuffer(0).length>0
     }
+
     /*
      * 事件监听 发现总线上存在MQTT命令事件，则执行相应的代码
      */
@@ -604,7 +614,7 @@ namespace mqtt_4_esp01 {
             let item=cmd_array.shift()
             let cmd_uuid=item[0]
             let payload=item[1]
-            SerialCMDCallback(cmd_uuid,payload)
+            SerialCMDCallback(cmd_uuid,payload) //不进行可重入的判断，下次改进
         }
     })
     /*
@@ -635,9 +645,8 @@ namespace mqtt_4_esp01 {
         }
         
     })
-
-        basic.forever(function() {
-            if(esp01_init){
+    basic.forever(function() {
+        if(esp01_init){
                 let fixed_header=serial.readBuffer(1)
                 let remaining_length = 0
                 let variable_header = null
@@ -652,19 +661,17 @@ namespace mqtt_4_esp01 {
                             remaining_length = get_remaining_length();
                             variable_header = read_serial_bytes(remaining_length); //Return Code
                             mqtt_connect.flag=true
-                            mqtt_connect.payload=variable_header[1]//返回结果
+                            mqtt_connect.payload=variable_header[1] //返回结果
                             break;
                         case SUBACK:  // SUBACK  0x90
                             remaining_length = get_remaining_length();
                             variable_header = read_serial_bytes(2); //Packet Identifier
                             payload = read_serial_bytes(1); //Return Code
-                            //serial.writeLine("[SUBACK]:Packet Identifier="+variable_header.toHex()+",Return Code="+payload.toHex());
                             mqtt_sub.flag=true
                             break;
                         case PUBACK:  // PUBACK  0x40
                             remaining_length = get_remaining_length();
                             variable_header = read_serial_bytes(2); //Packet Identifier
-                            //serial.writeLine("[SUBACK]:Packet Identifier="+variable_header.toHex()+",Return Code="+payload.toHex());
                             mqtt_public.flag=true
                             break;
                         case UNSUBACK: //0xB0
@@ -681,18 +688,14 @@ namespace mqtt_4_esp01 {
                             run_topic_callback(topic_name,payload.toString());
                             break;
                         default:
-                            // 不可识别的固定头信息 ，抛弃到所有缓冲区的数据
-                            //led.plot(4, 3)
+                            // 不可识别的固定头信息 ，抛弃到缓冲区内之后的所有数据
                             clean_buff(); //清空缓冲区
                     }
-                    //serial.writeString("ok\r\n")
-                }catch(e){ //如果有超时，或"剩余长度"过大，则抛弃到所有缓冲区中的数据
+                }catch(e){ //如果有超时，或"剩余长度"过大，抛弃到缓冲区内之后的所有数据
                     clean_buff(); //清空缓冲区
-                    basic.showString(e)
-                    //led.plot(4, 4)
-                    //serial.writeLine(e)
+                    basic.showString(e,50) //显示处异常信息
                 }
                 basic.pause(5)
             }
-    })   
+    }) 
 }
